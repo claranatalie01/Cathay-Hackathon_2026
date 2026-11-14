@@ -451,3 +451,12 @@ Found from a real itinerary screenshot (2-member group, Day 2):
 - [x] Demo wording removed from the booking sheet; it reads "Powered by Expedia".
 - [x] Sheets stay inside the 440 px phone frame on wide windows.
 - [ ] Not seen in a browser by Claude (sign-in needed).
+
+### Update, 15 November 2026 (docs and backend check aligned with the code)
+
+- [x] README, ARCHITECTURE, DATA_DICTIONARY, api-contract and CLAUDE.md now describe all twelve migrations, the three newer tables (`trip_preference_updates`, `itinerary_personal_changes`, `itinerary_bookings`), the booking and edit RPCs, the booking endpoint and response fields, the 15-second booking refresh and `VITE_GOOGLE_CALENDAR_CLIENT_ID`.
+- [x] `npm run check:backend` also checks the three newer tables and the five newer functions, so a missing migration shows as "not created yet".
+- [x] Removed the salmon "removed stop" box and "My change" tags. A stop removed from a personal plan can no longer be restored from the list.
+- [x] The chosen flight card opens its fares page again, and a failed fare save now shows the real reason.
+- [x] The "Q&A possible question" tab of the team Google Doc holds the judging Q&A preparation.
+- [ ] `docs/technical-guide.md` is a dated mentor note from 10 November (it still mentions the old mock folder) and was left as history on purpose.

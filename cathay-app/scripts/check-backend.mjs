@@ -7,7 +7,8 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-const TABLES = ['airports', 'profiles', 'groups', 'group_members', 'flight_selections', 'votes', 'bookings', 'itineraries', 'group_place_decks'];
+const TABLES = ['airports', 'profiles', 'groups', 'group_members', 'flight_selections', 'votes', 'bookings', 'itineraries', 'group_place_decks',
+  'trip_preference_updates', 'itinerary_personal_changes', 'itinerary_bookings'];
 // Database functions the app calls for shared trips.
 const FUNCTIONS = {
   list_my_groups: {},
@@ -23,6 +24,11 @@ const FUNCTIONS = {
   release_booking: { target_group: '00000000-0000-0000-0000-000000000000' },
   pay_booking: { target_group: '00000000-0000-0000-0000-000000000000' },
   save_preferences: { target_group: '00000000-0000-0000-0000-000000000000', place_ids: ['x'] },
+  finish_picking: { target_group: '00000000-0000-0000-0000-000000000000' },
+  save_personal_itinerary: { target_group: '00000000-0000-0000-0000-000000000000', expected_group_revision: '2026-11-14T00:00:00Z', expected_personal_revision: null, new_changes: {} },
+  save_group_itinerary_batch: { target_group: '00000000-0000-0000-0000-000000000000', expected_group_revision: '2026-11-14T00:00:00Z', expected_personal_revisions: {}, new_plan: {} },
+  save_booking: { target_group: '00000000-0000-0000-0000-000000000000', target_place_key: 'x', target_stop_name: 'x', target_date: '2026-11-22', target_start_time: '10:00', booking_reference: 'CX-000000', booking_price_jpy: 0 },
+  get_my_bookings: { target_group: '00000000-0000-0000-0000-000000000000' },
 };
 const envPath = fileURLToPath(new URL('../.env', import.meta.url));
 

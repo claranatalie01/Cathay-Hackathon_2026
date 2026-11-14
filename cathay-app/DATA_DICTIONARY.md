@@ -1,6 +1,6 @@
 # Cathay Together data dictionary
 
-This describes the schema after all seven migrations, the records assembled by the app, and the fixture data bundled with it. See [Architecture](ARCHITECTURE.md) for the flows and algorithms.
+This describes the schema after all twelve migrations, the records assembled by the app, and the fixture data bundled with it. See [Architecture](ARCHITECTURE.md) for the flows and algorithms.
 
 ## Schema sources
 
@@ -13,8 +13,13 @@ This describes the schema after all seven migrations, the records assembled by t
 | [`20261112010000_remove_groups.sql`](supabase/migrations/20261112010000_remove_groups.sql) | Adds creator deletion and member leave RPCs. |
 | [`20261112020000_researched_itineraries.sql`](supabase/migrations/20261112020000_researched_itineraries.sql) | Adds researched decks and planner RPCs, preserves legacy votes, validates saved preferences against the stored deck and moves generated itinerary inserts to the service role. |
 | [`20261112030000_rebuild_itineraries.sql`](supabase/migrations/20261112030000_rebuild_itineraries.sql) | Allows the planner to replace a stale saved itinerary. |
+| [`20261113000000_trip_preference_realtime.sql`](supabase/migrations/20261113000000_trip_preference_realtime.sql) | Adds `trip_preference_updates` and a trigger that publishes a notification when a member saves preferences, and adds the table to the `supabase_realtime` publication. |
+| [`20261114000000_optional_itinerary_preferences.sql`](supabase/migrations/20261114000000_optional_itinerary_preferences.sql) | Adds `finish_picking(uuid)`, so a member can finish picking without voting on every card. |
+| [`20261114010000_personal_itineraries.sql`](supabase/migrations/20261114010000_personal_itineraries.sql) | Adds `itinerary_personal_changes` and `save_personal_itinerary()` for one traveller's own edits. |
+| [`20261114020000_itinerary_edit_sessions.sql`](supabase/migrations/20261114020000_itinerary_edit_sessions.sql) | Adds `group_members.preference_categories`, `finish_picking(uuid, text[])` and `save_group_itinerary_batch()`, which checks revisions before saving a shared edit. |
+| [`20261114030000_itinerary_bookings.sql`](supabase/migrations/20261114030000_itinerary_bookings.sql) | Adds `itinerary_bookings`, `save_booking()` and `get_my_bookings()` for each traveller's simulated activity booking. |
 
-The nine tables below are in `public`. Supabase manages `auth.users`. The app references `auth.users.id` and the optional [demo seed](supabase/seed/demo_profiles.sql) matches accounts using `auth.users.email`. Column nullability below is explicit. A primary key is required and unique, including when it spans multiple columns.
+The twelve tables below are in `public`. Supabase manages `auth.users`. The app references `auth.users.id` and the optional [demo seed](supabase/seed/demo_profiles.sql) matches accounts using `auth.users.email`. Column nullability below is explicit. A primary key is required and unique, including when it spans multiple columns.
 
 ## Tables and relationships
 
@@ -68,6 +73,7 @@ Joins profiles to groups. The primary key is `(group_id, user_id)`, and `group_m
 | `user_id` | `uuid` | No | Foreign key to `profiles(id)`, cascading on deletion. |
 | `joined_at` | `timestamptz` | No | Defaults to `now()`. |
 | `preferences_saved_at` | `timestamptz` | Yes | Timestamp of the last save. Null means the member is awaiting completion or has changed a vote since saving. |
+| `preference_categories` | `text[]` | No | Defaults to empty. The activity categories the member chose when finishing picking: up to eight of `food`, `culture`, `nature`, `shopping`, `views`, `art`, `entertainment`, `relaxation`. |
 
 ### `flight_selections`
 
@@ -139,9 +145,48 @@ One stable deck per group. The migration marks trips with existing votes, saved 
 | `job_token` | `uuid` | Yes | Current planner lease token. |
 | `job_until` | `timestamptz` | Yes | Lease expiry. The claim RPC allows 310 seconds. |
 
+### `trip_preference_updates`
+
+One row per trip. A trigger rewrites `revision` whenever a member saves preferences, and Supabase Realtime delivers that change to signed-in trip members so their screens refresh at once. The row carries no trip data.
+
+| Column | Type | Null | Default, relationship or constraint |
+| --- | --- | --- | --- |
+| `id` | `uuid` | No | Primary key. Defaults to `gen_random_uuid()`, kept independent of the trip ID. |
+| `group_id` | `uuid` | No | Unique. Foreign key to `groups(id)`, cascading on deletion. |
+| `revision` | `uuid` | No | Changes on every preference save. |
+
+### `itinerary_personal_changes`
+
+One row per traveller and trip. `changes` holds that traveller's own edits to the shared plan (removed, replaced, moved or retimed stops). It never changes what the rest of the group sees.
+
+| Column | Type | Null | Default, relationship or constraint |
+| --- | --- | --- | --- |
+| `group_id` | `uuid` | No | Membership key component. |
+| `user_id` | `uuid` | No | Membership key component. |
+| `changes` | `jsonb` | No | Must be a JSON object. `save_personal_itinerary()` limits it to 150,000 bytes. |
+| `updated_at` | `timestamptz` | No | Defaults to `clock_timestamp()`. Used as the revision for conflict checks. |
+
+### `itinerary_bookings`
+
+One row per traveller and booked stop. A row says "this person booked this place on this date at this start time". It is kept apart from the plan, so rebuilding the plan never rewrites it. The checkout behind it is simulated: nothing is reserved or charged.
+
+| Column | Type | Null | Default, relationship or constraint |
+| --- | --- | --- | --- |
+| `group_id` | `uuid` | No | Membership key component. |
+| `stop_key` | `text` | No | Primary key component: `placeKey|date|startTime`. 1–300 characters. |
+| `user_id` | `uuid` | No | Primary key component and membership key component. |
+| `place_key` | `text` | No | The place ID. 1–120 characters. |
+| `stop_name` | `text` | No | 1–200 characters. |
+| `slot_date` | `date` | No | The day of the stop. |
+| `start_time` | `text` | No | The start time as shown, for example `10:00`. 1–40 characters. |
+| `status` | `text` | No | Defaults to and must be `booked`. |
+| `reference` | `text` | No | Simulated reference, `CX-` and six digits. Only its owner can read it. |
+| `price_jpy` | `integer` | No | 0 to 1,000,000. Only its owner can read it. |
+| `booked_at` | `timestamptz` | No | Defaults to `clock_timestamp()`. |
+
 ## Direct table access
 
-All nine tables have RLS enabled. The migrations revoke app table privileges from `anon` and grant table privileges to `service_role`. The signed-in browser uses `authenticated` and its access is as follows.
+All twelve tables have RLS enabled. The migrations revoke app table privileges from `anon` and grant table privileges to `service_role`. The signed-in browser uses `authenticated` and its access is as follows.
 
 | Table | Direct reads | Direct writes |
 | --- | --- | --- |
@@ -154,6 +199,9 @@ All nine tables have RLS enabled. The migrations revoke app table privileges fro
 | `bookings` | None | None. Booking access is exclusively through RPCs in the app. |
 | `itineraries` | Group members | Update an existing group row with `updated_by = auth.uid()`. The planner service inserts generated plans. |
 | `group_place_decks` | Group members can read `group_id`, `legacy` and `places`. | Service role only. |
+| `trip_preference_updates` | Group members | None. A trigger writes it. |
+| `itinerary_personal_changes` | Group members | None. Writes go through `save_personal_itinerary()`. |
+| `itinerary_bookings` | Group members can read every column except `reference` and `price_jpy`. | None. Writes go through `save_booking()`, which only ever writes the caller's own row. |
 
 [`private.is_member()` and `private.shares_group()`](supabase/migrations/20261111000000_initial_schema.sql) implement the membership checks used by RLS. The group code and membership represent invitations. There is no invitations table.
 
@@ -175,6 +223,12 @@ Each browser-callable function below uses `SECURITY DEFINER` with an empty searc
 | `start_booking(target_group uuid)` | Booking `jsonb` | Requires both selections and an unpaid trip. Starts a 20-minute hold or keeps an existing live hold. |
 | `release_booking(target_group uuid)` | Booking `jsonb` | Clears the caller's hold for an unpaid booking. |
 | `pay_booking(target_group uuid)` | Booking `jsonb` | Requires both selections, an unpaid trip and a live hold. Sums stored prices, writes simulated payment fields and clears the hold. |
+| `finish_picking(target_group uuid)` | `void` | Marks the caller ready without requiring a vote on every card. Repeating it is harmless. |
+| `finish_picking(target_group uuid, selected_categories text[])` | `void` | Saves up to eight valid activity categories, then calls the one-argument version. Invalid categories raise `validation_failed`. |
+| `save_personal_itinerary(target_group uuid, expected_group_revision timestamptz, expected_personal_revision timestamptz, new_changes jsonb)` | `void` | Saves the caller's own edits if neither revision has moved. Otherwise raises `itinerary_changed`. |
+| `save_group_itinerary_batch(target_group uuid, expected_group_revision timestamptz, expected_personal_revisions jsonb, new_plan jsonb)` | `void` | Locks the shared plan, checks the group and every member's personal revision, then saves the new plan. Otherwise raises `itinerary_changed`. |
+| `save_booking(target_group uuid, target_place_key text, target_stop_name text, target_date date, target_start_time text, booking_reference text, booking_price_jpy integer)` | Booking `jsonb` | Books one stop for the caller only. The caller comes from the session. Repeating the same call returns the existing booking. |
+| `get_my_bookings(target_group uuid)` | `jsonb` array | The caller's own bookings with `stop_key`, `reference` and `price_jpy`. |
 | `save_preferences(target_group uuid, place_ids text[])` | `void` | Requires a vote for every researched deck ID, then updates `preferences_saved_at`. For a legacy deck it uses the supplied list and requires at least one ID. |
 
 ### Planner RPCs

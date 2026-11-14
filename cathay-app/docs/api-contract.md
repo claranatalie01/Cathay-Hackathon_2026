@@ -399,13 +399,19 @@ New shared plans store `transfers` with a symmetric `between` matrix keyed by pl
 
 Round up to the next five minutes, with a five-minute minimum. Check transfers between physical stops on the same day, after any intervening free-time block. Airport buffers are 90 minutes after the last arrival and three hours before the earliest departure. New AI plans have zero transport allowance. Transfer shortfalls appear as review warnings. The planner can try one revision and save the reviewed draft with the fewest errors. If no usable draft is available, the app offers **Try again**.
 
+The response also carries `bookings` and `travellers`. `bookings` is `[{ stop_key, user_id, place_key, stop_name, slot_date, start_time, booked_at }]` for the whole group, with `reference` and `price_jpy` added only to the caller's own rows. `travellers` is `[{ id, name, isViewer }]`. If the bookings migration has not been run, `bookings` is `[]`.
+
 ### `PUT /groups/:id/itinerary`
 
 Request: `{ "days": [{ "date": "2026-11-22", "stopIds": ["place-culture", "suggested-ueno"] }] }`. Every day must be sent with its stops in the new order; leaving a stop out removes it. Flights cannot be moved. Responds with the same body as the `GET`, with totals recalculated. Errors: `422 validation_failed`.
 
 ### `GET /groups/:id/itinerary/stops/:stopId`
 
-One place stop: `{ group, day: { index, label }, stop, votes }`. `votes` is `[{ userId, name, initial, isViewer, choice: "like" | "pass" | null }]` for a voted place, and `null` for a suggested one. Errors: `404 stop_not_found`.
+One place stop: `{ group, day: { index, label }, stop, votes, date, bookings, travellers }`. `date` is the day's ISO date, and `bookings` and `travellers` are as in the itinerary response. `votes` is `[{ userId, name, initial, isViewer, choice: "like" | "pass" | null }]` for a voted place, and `null` for a suggested one. Errors: `404 stop_not_found`.
+
+### `POST /groups/:id/itinerary/bookings`
+
+Books one stop for the signed-in caller only. The caller comes from the session, never from the body. Request: `{ "placeKey": "place-culture", "stopName": "Mori Art Museum", "date": "2026-11-22", "startTime": "10:00", "reference": "CX-482913", "price": 1800 }`. The reference is simulated (`CX-` and six digits) and the price is 0 to 1,000,000 yen. Responds `{ "booking": { … } }` with the saved row. Repeating the same request returns the existing row. Errors: `404 group_not_found` for a non-member, `422 validation_failed` for a bad body. Nothing real is reserved or charged.
 
 ## Notes for the backend
 

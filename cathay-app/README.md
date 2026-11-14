@@ -5,7 +5,7 @@ Interactive demo of the Cathay Together group-booking prototype.
 - [Live prototype](https://cathay-together.vercel.app)
 - [Code repository](https://github.com/claranatalie01/Cathay-Together) (app in `cathay-app/`)
 
-Supabase shares trip data across signed-in travellers. Flights use a bundled OAG schedule snapshot for Tokyo Haneda. Fares, booking, payment and tickets are simulated.
+Supabase shares trip data across signed-in travellers. Flights use a bundled OAG schedule snapshot for Tokyo Haneda. Fares, flight booking, payment and tickets are simulated. Each traveller can also book their own itinerary stops in the app. That checkout is simulated too and shown as "Powered by Expedia".
 
 Tavily researches the swipe deck, Geoapify supplies coordinates where available, and the Python planner uses Poe to draft and review one group itinerary.
 
@@ -54,7 +54,7 @@ The tests use local fixtures and run without provider credentials, a running ser
 
 ### Production deployment
 
-For production, apply the pending [migrations](supabase/migrations) in order through [`20261113000000_trip_preference_realtime.sql`](supabase/migrations/20261113000000_trip_preference_realtime.sql). That migration adds the notification table to the `supabase_realtime` publication. In Vercel, keep the project root set to `cathay-app`, enable Fluid Compute for the planner’s 300-second limit, and redeploy after setting the variables below. The React app and `/api/planner` deploy together. Use `npm run dev` with the local planner to test the whole workflow locally.
+For production, apply the pending [migrations](supabase/migrations) in order through [`20261114030000_itinerary_bookings.sql`](supabase/migrations/20261114030000_itinerary_bookings.sql). [`20261113000000_trip_preference_realtime.sql`](supabase/migrations/20261113000000_trip_preference_realtime.sql) adds the notification table to the `supabase_realtime` publication, and the last migration adds activity booking. The itinerary opens without booking marks if that last migration has not been run, and writes a warning to the browser console. In Vercel, keep the project root set to `cathay-app`, enable Fluid Compute for the planner’s 300-second limit, and redeploy after setting the variables below. The React app and `/api/planner` deploy together. Use `npm run dev` with the local planner to test the whole workflow locally.
 
 To check readiness updates after applying the migration, sign in as two members of one trip in separate browser sessions. With both on the trip, save the last activity choice in one session and confirm the other session shows the member as ready before its next five-second poll. With a third signed-in account outside the trip, attempt the same subscription and confirm no change payload arrives. Block only the Realtime WebSocket in the receiving session, save again, and check that the visible screen refreshes by polling. Unblock the socket and confirm that rejoining refreshes readiness once.
 
@@ -64,6 +64,7 @@ To check readiness updates after applying the migration, sign in as two members 
 |---|---|
 | `VITE_SUPABASE_URL` | Supabase project URL. Required and exposed in the browser bundle. |
 | `VITE_SUPABASE_PUBLISHABLE_KEY` | Public `sb_publishable_…` key or legacy `anon` key. Required and exposed in the browser bundle. |
+| `VITE_GOOGLE_CALENDAR_CLIENT_ID` | Optional public OAuth web client ID for Add to Google Calendar. Register each app origin under Authorized JavaScript origins. While the Google Cloud app is in Testing, only listed test users can use it. Without it the dialog says Google Calendar is not configured. |
 | `SUPABASE_SECRET_KEY` | Server only. Supabase `sb_secret_…` key or legacy `service_role` key used to store the group deck and generated plan. |
 | `TAVILY_API_KEY` | Server only. Required for researching places. |
 | `POE_API_KEY` | Server only. Required for search planning, curation, scheduling and review. |
@@ -98,9 +99,11 @@ Every route below also works when typed straight into the address bar. Create a 
 | | `.../preferences/<placeId>` | Swipe through ideas |
 | | `.../preferences/saved` | Saved picks and group readiness |
 | E. Itinerary | `.../itinerary/building`, `.../itinerary` | Plan built from everyone's picks (Edit and Done) |
-| | `.../itinerary/places/<stopId>` | One place |
+| | `.../itinerary/places/<stopId>` | One place, with who has booked it and Book for me |
 | Other | `/design-system` | Living style guide (tokens and real components) |
 | | `/sign-in`, `/welcome` | Shared sign-in and first-time profile setup |
+
+On the itinerary, each bookable stop shows whether you have booked and how many travellers have ("1 of 2 booked"). Book for me opens one sheet with a single Confirm and pay step. Meals and free time need no booking. Each traveller pays only for themselves, and nobody else sees their reference or price.
 
 The Next step card on Group details and the Members page follows your progress from Pick flight to Review & pay, preferences, and View itinerary.
 
@@ -110,8 +113,8 @@ The Next step card on Group details and the Members page follows your progress f
 - `src/design-system` – the `/design-system` style guide. The rules are in [`docs/design-system.md`](docs/design-system.md), and `npm run check:tokens` checks CSS.
 - `src/components` – `layout/`, `ui/` (Button, Chip, Field, Sheet, Toast, StateMessage, LoadingState, ErrorState), `domain/`
 - `src/features` – pages, one folder per flow
-- `src/api` – page-facing async API, Supabase handlers, and response builders
-- `src/algorithms` – JavaScript flight timing, group ranking, itinerary editing and transfer display helpers
+- `src/api` – page-facing async API, Supabase handlers, and response builders. `src/api/providers` holds the simulated Expedia checkout.
+- `src/algorithms` – JavaScript flight timing, group ranking, itinerary editing, transfer display, booking status and calendar export helpers
 - `server/itinerary` and `api/planner.py` – the shared research, geocoding and itinerary pipeline and its Vercel entry point
 - `src/data` – UI copy, OAG snapshot, place coordinates, and other static data
 - `supabase` – schema migrations, RPCs, optional demo profile seed and SQL tests

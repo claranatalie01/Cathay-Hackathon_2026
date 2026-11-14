@@ -7,7 +7,7 @@ React 19 + Vite 8 + react-router-dom 7 demo app: a phone-sized (440 px) "Travel 
 ## Commands
 
 - `npm run dev` : dev server (style guide at `/design-system`)
-- `npm test` : runs the algorithm tests in `src/algorithms` (flight timing and ranking, itinerary edits and transfer display). Keep those files free of browser code and import them with the `.js` ending so Node can run them
+- `npm test` : runs the algorithm tests in `src/algorithms` (flight timing and ranking, itinerary edits, transfer display, booking status and calendar export). Keep those files free of browser code and import them with the `.js` ending so Node can run them
 - `npm run check:tokens` : must pass before you finish any change (also runs on `npm run build`)
 - `npm run check:backend` : checks the Supabase URL and publishable key in `.env` (the one git-ignored environment file; names in `.env.example`) and that each table exists and is closed to visitors. Database tables live in `supabase/migrations`; never put the secret key in the repo
 - `npm run icons:inventory` : regenerate `src/design-system/iconInventory.js` after adding or changing any SVG in `public/assets`
@@ -32,7 +32,7 @@ React 19 + Vite 8 + react-router-dom 7 demo app: a phone-sized (440 px) "Travel 
 - Real-app dp values are used 1:1 as CSS px.
 - Every screen: `Screen` > `StatusBar` > `PageHeader` > page body > `BottomNav`. The page title is the `h1` and gets focus after each route change (`AppShell` in `App.jsx`).
 - Focus on fields is a 2 dp underline (no ring around the row). Keep every interactive element's hover, pressed, focus and disabled states.
-- Routes: `/groups`, `/groups/new`, `/groups/:groupId/invite` (members), `/invite/:code`, `/design-system`, and the flight flow `/groups/:groupId/flights/search`, `/flights/outbound`, `/flights/return`, `/flights/:direction/:flightId/fares` (`?cabin=`, `?date=`, `?sheet=upgrade|compare`), plus `/groups/:groupId/board` (`?view=timeline`, `?sheet=book`), `/payment`, `/confirmed`. Other paths are placeholders (`ComingSoonPage`).
+- Routes: `/groups`, `/groups/new`, `/groups/:groupId/invite` (members), `/invite/:code`, `/design-system`, and the flight flow `/groups/:groupId/flights/search`, `/flights/outbound`, `/flights/return`, `/flights/:direction/:flightId/fares` (`?cabin=`, `?date=`, `?sheet=upgrade|compare`), plus `/groups/:groupId/board` (`?view=timeline`, `?sheet=book`), `/payment`, `/confirmed`, and the itinerary `/groups/:groupId/itinerary` (`?day=`, `?view=timeline`) with `/itinerary/places/:stopId`, where each traveller books their own stops (simulated, `src/api/providers/expedia.js`). Other paths are placeholders (`ComingSoonPage`).
 - Contrast: text 4.5:1, borders and focus 3:1. Known failures are flagged in the style guide, not hidden.
 
 ## Open items (not done)
