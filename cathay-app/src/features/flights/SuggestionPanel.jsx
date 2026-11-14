@@ -20,7 +20,7 @@ export function RecommendedGroupFlight({ data, groupId, onOpen }) {
       {mine && (
         <FlightCard
           flight={{ ...mine, priceFrom: mine.price }}
-          to={mine.fixed ? undefined : `/groups/${groupId}/flights/${data.direction}/${mine.flightId}/fares?cabin=${data.cabin}`}
+          to={`/groups/${groupId}/flights/${data.direction}/${mine.flightId}/fares?cabin=${data.cabin}`}
           match={{ tone: 'within', text: copy.recommended }}
           gap={gap[0].toUpperCase() + gap.slice(1)}
           fareLabel={mine.fixed ? copy.yourSelectedFare : copy.yourFare}
@@ -74,8 +74,8 @@ function Combination({ option, groupId, direction, cabin, viewerId }) {
           <strong>{copy.total(hkd(option.total))}</strong> · {spreadText(option, direction)}
         </p>
         {/* Choosing is always the person's own: this only opens their flight. A flight they have
-            already chosen needs no button. */}
-        {me && !me.fixed && (
+            already chosen stays openable, so they can carry on to the next step or change the fare. */}
+        {me && (
           <Button className="suggest__choose" to={`/groups/${groupId}/flights/${direction}/${me.flightId}/fares?cabin=${cabin}`} variant="secondary">
             {copy.choose(me.flightNo)}
           </Button>
