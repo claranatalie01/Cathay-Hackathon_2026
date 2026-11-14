@@ -5,6 +5,18 @@ Cathay Hackathon 2026 prototype by Group E147. Friends flying from different cit
 - [Live prototype](https://cathay-hackathon-2026.vercel.app)
 - [Code repository](https://github.com/claranatalie01/Cathay-Hackathon_2026)
 
+### Demo accounts
+
+The live prototype needs a sign-in. Use any of these trial accounts:
+
+| Traveller | Email | Password |
+| --- | --- | --- |
+| Gaudi | `gaudi@example.com` | `gauditrial123` |
+| Clara | `clara@example.com` | `claratrial123` |
+| Kabe | `kabe@example.com` | `kabetrial123` |
+
+To try a shared trip, sign in as two different travellers in separate browser sessions (for example one normal window and one private window).
+
 ## Where things are
 
 The app lives in [`cathay-app/`](cathay-app). Start with its [README](cathay-app/README.md), which covers setup, environment variables, deployment and tests.
