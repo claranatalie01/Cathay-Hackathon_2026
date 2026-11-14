@@ -2,7 +2,7 @@
 
 Interactive demo of the Cathay Together group-booking prototype.
 
-- [Live prototype](https://cathay-together.vercel.app)
+- [Live prototype](https://cathay-hackathon-2026.vercel.app)
 - [Code repository](https://github.com/claranatalie01/Cathay-Hackathon_2026) (app in `cathay-app/`)
 
 Supabase shares trip data across signed-in travellers. Flights use a bundled OAG schedule snapshot for Tokyo Haneda. Fares, flight booking, payment and tickets are simulated. Each traveller can also book their own itinerary stops in the app. That checkout is simulated too and shown as "Powered by Expedia".

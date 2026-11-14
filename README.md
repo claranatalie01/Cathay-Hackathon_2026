@@ -2,7 +2,7 @@
 
 Cathay Hackathon 2026 prototype by Group E147. Friends flying from different cities plan one trip inside the Cathay app: each person picks their own flight so the group lands close together, everyone swipes on activities, the app builds one shared itinerary, and each person books and pays only for themselves.
 
-- [Live prototype](https://cathay-together.vercel.app)
+- [Live prototype](https://cathay-hackathon-2026.vercel.app)
 - [Code repository](https://github.com/claranatalie01/Cathay-Hackathon_2026)
 
 ## Where things are
