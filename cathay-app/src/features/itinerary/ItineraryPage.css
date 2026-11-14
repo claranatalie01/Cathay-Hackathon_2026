@@ -500,6 +500,17 @@
   -webkit-touch-callout: none;
 }
 
+@media (any-pointer: fine) {
+  .itinerary__list [data-edit-stop] .stop--editing {
+    cursor: grab;
+  }
+
+  .itinerary__list:has([data-dragging]),
+  .itinerary__list:has([data-dragging]) [data-edit-stop] .stop--editing {
+    cursor: grabbing;
+  }
+}
+
 .stop--editing[data-dragging] {
   --stop-drag-y: 0px;
   position: relative;

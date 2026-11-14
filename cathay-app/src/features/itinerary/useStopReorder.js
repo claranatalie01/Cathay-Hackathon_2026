@@ -19,32 +19,42 @@ export function useStopReorder(resetKey, onMove) {
 
   useEffect(() => clearPress, [resetKey]);
 
+  function lift(active) {
+    active.held = true;
+    active.card.dataset.dragging = '';
+    active.card.style.setProperty('--stop-drag-y', '0px');
+    active.card.setPointerCapture(active.id);
+  }
+
   return {
     onPointerDown(event) {
       if (!event.isPrimary || event.button !== 0 || event.target.closest('button, a, input')) return;
       clearPress();
       const card = event.currentTarget;
-      const id = event.pointerId;
+      const { pointerId: id, pointerType } = event;
       const active = {
-        card, id, x: event.clientX, y: event.clientY, held: false,
+        card, id, pointerType, x: event.clientX, y: event.clientY, held: false,
         stopScroll: (touch) => { if (press.current?.held && touch.cancelable) touch.preventDefault(); },
       };
       press.current = active;
+      if (pointerType === 'mouse') {
+        event.preventDefault();
+        card.setPointerCapture(id);
+        return;
+      }
       card.addEventListener('touchmove', active.stopScroll, { passive: false });
       active.timer = setTimeout(() => {
         if (!card.isConnected) return clearPress();
-        active.held = true;
-        card.dataset.dragging = '';
-        card.style.setProperty('--stop-drag-y', '0px');
-        card.setPointerCapture(id);
+        lift(active);
       }, HOLD_MS);
     },
     onPointerMove(event) {
       const active = press.current;
       if (active?.id !== event.pointerId) return;
       if (!active.held) {
-        if (Math.hypot(event.clientX - active.x, event.clientY - active.y) > MOVE_THRESHOLD) clearPress();
-        return;
+        if (Math.hypot(event.clientX - active.x, event.clientY - active.y) <= MOVE_THRESHOLD) return;
+        if (active.pointerType !== 'mouse') return clearPress();
+        lift(active);
       }
       const list = active.card.closest('ol');
       active.card.style.setProperty('--stop-drag-y', `${event.clientY - active.y}px`);
@@ -62,9 +72,6 @@ export function useStopReorder(resetKey, onMove) {
       if (target) onMove(id, target);
     },
     onPointerCancel: clearPress,
-    onPointerLeave(event) {
-      if (!press.current?.held && event.pointerType !== 'touch') clearPress();
-    },
     onLostPointerCapture: clearPress,
     onContextMenu(event) {
       if (press.current) event.preventDefault();

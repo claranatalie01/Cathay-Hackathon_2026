@@ -141,7 +141,7 @@ function TripItinerary({ groupId }) {
           </IconHeading>
           {list ? (
             <>
-              {editing && <p className="itinerary__note">Press and hold a card to reorder it, or use Move up and Move down.</p>}
+              {editing && <p className="itinerary__note">Drag a card to reorder it. On touch screens, hold the card first. You can also use Move up and Move down.</p>}
               <ol className="itinerary__list">
                 {day.items.map((item) => {
                   const placeIndex = ids.indexOf(item.id);
