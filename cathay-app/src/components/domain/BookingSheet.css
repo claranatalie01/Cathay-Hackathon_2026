@@ -23,9 +23,9 @@
 }
 
 .booking-sheet__provider {
-  font-size: var(--text-caption-size);
-  line-height: var(--text-caption-leading);
-  text-align: center;
+  align-self: center;
+  width: 45%;
+  height: auto;
 }
 
 .booking-sheet__error {

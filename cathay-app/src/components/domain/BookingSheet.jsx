@@ -77,7 +77,7 @@ export default function BookingSheet({ open, onClose, groupId, stop, date, userI
             <p className="booking-sheet__note">{offer.cancellation}</p>
             <Button size="lg" data-autofocus disabled={busy} onClick={confirm}>{busy ? copy.working : copy.confirm(price)}</Button>
             <Button size="lg" variant="secondary" disabled={busy} onClick={onClose}>{copy.cancel}</Button>
-            <p className="booking-sheet__note booking-sheet__provider">{PROVIDER_LABEL}</p>
+            <img className="booking-sheet__provider" src="/assets/powered-by-expedia.png" alt={PROVIDER_LABEL} />
           </>
         )}
         {phase === 'done' && (
