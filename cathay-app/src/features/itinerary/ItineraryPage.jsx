@@ -190,8 +190,8 @@ function TripItinerary({ groupId }) {
               ))}
               {orphans.length > 0 && (
                 <section className="itinerary__orphans" aria-labelledby="orphans-heading">
-                  <p className="itinerary__maybe-name" id="orphans-heading">{COPY.booking.orphanTitle}</p>
-                  {orphans.map((row) => <p className="itinerary__note" key={row.stop_key}>{COPY.booking.orphanNote(row.stop_name, row.reference)}</p>)}
+                  <p className="itinerary__maybe-name" id="orphans-heading">{COPY.stopBooking.orphanTitle}</p>
+                  {orphans.map((row) => <p className="itinerary__note" key={row.stop_key}>{COPY.stopBooking.orphanNote(row.stop_name, row.reference)}</p>)}
                 </section>
               )}
               {day.items.length === 0 && <p className="itinerary__note">{copy.emptyDay}</p>}

@@ -7,7 +7,7 @@ const TONE = { booked: 'primary', not_booked: 'neutral', no_booking_needed: 'neu
 
 // "Not booked" / "Booked" / "No booking needed" for the viewer, plus "1 of 2 booked" on bookable stops.
 export default function BookingTags({ summary }) {
-  const copy = COPY.booking;
+  const copy = COPY.stopBooking;
   return (
     <div className="booking-tags">
       <Chip tone={TONE[summary.status]}>{copy[LABEL[summary.status]]}</Chip>

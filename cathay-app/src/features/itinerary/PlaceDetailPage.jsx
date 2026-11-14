@@ -59,7 +59,7 @@ export default function PlaceDetailPage() {
   }
 
   const { stop, votes, day } = data;
-  const book = COPY.booking;
+  const book = COPY.stopBooking;
   const summary = bookingSummary(stop, data.date, data.bookings ?? [], data.travellers ?? [], (data.travellers ?? []).find((p) => p.isViewer)?.id);
   const closeSheet = () => setSheetOpen(false);
   const liked = votes ? votes.filter((v) => v.choice === 'like').length : 0;

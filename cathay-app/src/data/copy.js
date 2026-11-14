@@ -1,7 +1,7 @@
 // UI text, kept apart from components so it can be translated or served by an
 // API later. Functions take the values that vary (for example the user's name).
 export const COPY = {
-  booking: {
+  stopBooking: {
     notBooked: 'Not booked',
     booked: 'Booked',
     noBookingNeeded: 'No booking needed',

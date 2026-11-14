@@ -10,7 +10,7 @@ import './BookingSheet.css';
 // One bottom sheet, one decision. It checks the price for ONE traveller, asks for one tap, and turns
 // into the confirmation in place. Everything is prefilled; nothing is typed. The provider is simulated.
 export default function BookingSheet({ open, onClose, groupId, stop, date, userId, onChooseTime, onDone }) {
-  const copy = COPY.booking;
+  const copy = COPY.stopBooking;
   const [phase, setPhase] = useState('checking'); // checking | review | working | done | unavailable | failed
   const [offer, setOffer] = useState(null);
   const [result, setResult] = useState(null);
