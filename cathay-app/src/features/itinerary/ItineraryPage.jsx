@@ -14,9 +14,11 @@ import SegmentedControl from '../../components/ui/SegmentedControl';
 import StatTile from '../../components/ui/StatTile';
 import Tabs from '../../components/ui/Tabs';
 import { useToast } from '../../components/ui/Toast';
+import { bookingSummary, orphanBookings } from '../../algorithms/bookings';
 import { COPY } from '../../data/copy';
 import { OSM_CREDIT } from '../../data/placeGeo';
 import { useAsync } from '../../hooks/useAsync';
+import { useBookingRefresh } from '../../hooks/useBookingRefresh';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 import CalendarExport from './CalendarExport';
 import ItineraryEditSheet from './ItineraryEditSheet';
@@ -48,6 +50,7 @@ function TripItinerary({ groupId }) {
     apply({ type: 'move', id, target, date, reviewTime: true });
   });
   useDocumentTitle(copy.title);
+  useBookingRefresh();
 
   const frame = (body, sheet) => (
     <Screen>
@@ -101,6 +104,11 @@ function TripItinerary({ groupId }) {
     apply(op, scope, panel?.type === 'time' ? panel : null);
   }
 
+  const bookings = data.bookings ?? [];
+  const travellers = data.travellers ?? [];
+  const viewerId = travellers.find((person) => person.isViewer)?.id;
+  const bookingFor = (item) => (item.kind === 'place' && !editing ? bookingSummary(item, day.date, bookings, travellers, viewerId) : undefined);
+  const orphans = editing ? [] : orphanBookings(bookings, days, viewerId);
   const stopLink = (stop) => `/groups/${groupId}/itinerary/places/${stop.id}?day=${dayIndex}`;
 
   return frame(
@@ -164,6 +172,7 @@ function TripItinerary({ groupId }) {
                         dragHandlers={editing && editable && !busy ? dragHandlers : undefined}
                         onRestore={editing && !busy && session.scope === 'personal' && item.myChange ? () => editStop('restore', item) : undefined}
                         pickFlightsTo={`/groups/${groupId}/flights/search`}
+                        booking={bookingFor(item)}
                       />
                       {issue && <div className="itinerary-edit__warning">
                         <p>{issue.reason}</p>
@@ -179,6 +188,12 @@ function TripItinerary({ groupId }) {
                   {editing && <Button size="sm" variant="secondary" disabled={busy} onClick={() => editStop('restore', item)}>{copy.restoreShared}</Button>}
                 </div>
               ))}
+              {orphans.length > 0 && (
+                <section className="itinerary__orphans" aria-labelledby="orphans-heading">
+                  <p className="itinerary__maybe-name" id="orphans-heading">{COPY.booking.orphanTitle}</p>
+                  {orphans.map((row) => <p className="itinerary__note" key={row.stop_key}>{COPY.booking.orphanNote(row.stop_name, row.reference)}</p>)}
+                </section>
+              )}
               {day.items.length === 0 && <p className="itinerary__note">{copy.emptyDay}</p>}
               {!editing && (
                 <div className="itinerary__total">

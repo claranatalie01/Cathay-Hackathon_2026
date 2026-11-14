@@ -38,3 +38,12 @@ export async function saveItinerary(groupId, edit) {
 export function getStop(groupId, stopId) {
   return request('GET', `/groups/${enc(groupId)}/itinerary/stops/${enc(stopId)}`);
 }
+
+// Books ONE stop for the signed-in traveller only (the server takes the traveller from the session).
+// `booking` is { placeKey, stopName, date, startTime, reference, price } after the provider confirmed it.
+export async function saveBooking(groupId, booking) {
+  const result = await request('POST', `/groups/${enc(groupId)}/itinerary/bookings`, booking);
+  invalidateGet(`/groups/${enc(groupId)}/itinerary`);
+  notifyDataChanged();
+  return result;
+}

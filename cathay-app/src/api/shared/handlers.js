@@ -471,6 +471,20 @@ async function tripContext(params, want = {}) {
   }
   let itineraryRevision;
   let personalRows = [];
+  let bookingRows = [];
+  if (want.bookings) {
+    // Booking is an extra: if it cannot be read (for example its migration has not been run yet), the
+    // itinerary still opens, just without booking marks.
+    try {
+      bookingRows = await rows(supabase.from('itinerary_bookings')
+        .select('stop_key, user_id, place_key, stop_name, slot_date, start_time, booked_at').eq('group_id', id));
+      const mine = new Map((await call(supabase, 'get_my_bookings', { target_group: id })).map((row) => [row.stop_key, row]));
+      bookingRows = bookingRows.map((row) => (row.user_id === userId && mine.has(row.stop_key)
+        ? { ...row, reference: mine.get(row.stop_key).reference, price_jpy: mine.get(row.stop_key).price_jpy } : row));
+    } catch {
+      bookingRows = [];
+    }
+  }
   if (want.itinerary) {
     const [saved] = await rows(supabase.from('itineraries').select('plan, updated_at').eq('group_id', id));
     group.itinerary = saved?.plan ?? null;
@@ -491,6 +505,7 @@ async function tripContext(params, want = {}) {
     deck,
     itineraryRevision,
     personalRows,
+    bookingRows,
     user: { id: userId },
     dates: datesBetween(raw.startDate, raw.endDate),
     votes: want.votes ? votesFor(group, names, places) : null,
@@ -516,7 +531,7 @@ const bookingAction = (name) => async ({ params }) => {
   return { status: 200, body: bookingBody(await tripContext(params), record) };
 };
 
-const itineraryOptions = { votes: true, itinerary: true, personal: true };
+const itineraryOptions = { votes: true, itinerary: true, personal: true, bookings: true };
 const changedItinerary = () => new ApiError(409, 'itinerary_changed', REFUSALS.itinerary_changed[1]);
 
 const saveItinerary = async (ctx, plan = ctx.group.itinerary) => {
@@ -731,6 +746,23 @@ const tripRoutes = [
       await saveItinerary(ctx, plan);
     }
     return { status: 200, body: itineraryBody(await tripContext(params, itineraryOptions)) };
+  }],
+
+  // POST /groups/:id/itinerary/bookings – books ONE stop for the caller only. The database takes the
+  // traveller from the session and refuses anyone who is not in the group.
+  ['POST', '/groups/:id/itinerary/bookings', async ({ params, body }) => {
+    const id = groupId(params);
+    const { supabase } = await context();
+    const saved = await call(supabase, 'save_booking', {
+      target_group: id,
+      target_place_key: body?.placeKey,
+      target_stop_name: body?.stopName,
+      target_date: body?.date,
+      target_start_time: body?.startTime,
+      booking_reference: body?.reference,
+      booking_price_jpy: body?.price,
+    });
+    return { status: 200, body: { booking: saved } };
   }],
 
   ['GET', '/groups/:id/itinerary/stops/:stopId', async ({ params }) => {

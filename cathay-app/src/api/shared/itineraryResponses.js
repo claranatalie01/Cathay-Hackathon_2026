@@ -3,6 +3,11 @@ import { LEGACY_PLACES } from '../../data/legacyPlaces.js';
 import { assemble, retimePlan } from './itineraryData.js';
 import { itineraryTimeline, personalRemovals, withPersonalChanges } from './personalItinerary.js';
 
+// Everyone in the group, for the "who has booked" lines. Only first names, no prices.
+const travellersOf = (ctx) => ctx.group.members.map(({ userId }) => ({
+  id: userId, name: ctx.names?.[userId] ?? 'Traveller', isViewer: userId === ctx.user.id,
+}));
+
 // What the itinerary screens read. `ctx` is { group, user, dates, votes }.
 export function bodyFor(ctx, draftPlan) {
   const { group, user, dates, votes } = ctx;
@@ -16,6 +21,8 @@ export function bodyFor(ctx, draftPlan) {
     group: { id: group.id, name: group.name, destination: group.destination, datesLabel: group.datesLabel },
     members: group.members.length,
     ...result,
+    bookings: ctx.bookingRows ?? [],
+    travellers: travellersOf(ctx),
     groupRevision: ctx.itineraryRevision,
     personalRevision: own?.updated_at ?? null,
     personalRevisions: Object.fromEntries(personalRows.map(({ user_id, updated_at }) => [user_id, updated_at])),
@@ -60,9 +67,12 @@ export function stopBody(ctx, stopId, initials) {
       day: { index: day.index, label: day.label },
       stop: { ...stop, budget: place?.budget ?? stop.costLabel, durationBest: [
         stop.minutes >= 60 ? `${Math.floor(stop.minutes / 60)} hr${stop.minutes % 60 ? ` ${stop.minutes % 60} min` : ''}` : `${stop.minutes} min`,
-        place?.bestTime,
+        stop.slot?.split(' · ')[0], // the part of the day the stop is actually scheduled in, matching the page title
       ].filter(Boolean).join(' · '), tip: place?.tip ?? null },
       votes: votes?.map((v) => ({ ...v, initial: initials[v.userId], isViewer: v.userId === ctx.user.id })) ?? null,
+      date: day.date,
+      bookings: ctx.bookingRows ?? [],
+      travellers: travellersOf(ctx),
     };
   }
   throw new ApiError(404, 'stop_not_found', 'That stop is not in the itinerary.');

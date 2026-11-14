@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom';
 import { COPY } from '../../data/copy';
 import { fallbackTo } from '../../data/photos';
+import { withoutSourceTags } from '../../data/sourceTags';
+import BookingTags from './BookingTags';
 import './ItineraryStop.css';
 
 const shortDate = (iso) => {
@@ -11,7 +13,7 @@ const minutesLabel = (m) => (m >= 60 ? `${Math.floor(m / 60)}${m % 60 ? ` hr ${m
 
 // One stop in a day: a booked flight (arrival teal, departure steel blue), a place with photo, or a
 // prompt to choose flights. In edit mode a place shows move and remove buttons instead of linking.
-export default function ItineraryStop({ stop, to, editing = false, canUp = false, canDown = false, onUp, onDown, onRemove, onEditDuration, onRestore, dragHandlers, pickFlightsTo }) {
+export default function ItineraryStop({ stop, to, editing = false, canUp = false, canDown = false, onUp, onDown, onRemove, onEditDuration, onRestore, dragHandlers, pickFlightsTo, booking }) {
   const copy = COPY.itin;
   if (stop.kind === 'flight-missing') {
     const arrival = stop.id === 'flight-arrival';
@@ -56,8 +58,9 @@ export default function ItineraryStop({ stop, to, editing = false, canUp = false
         <p className="stop__meta">
           {stop.durationLabel ?? minutesLabel(stop.minutes)} · {stop.costLabel}
         </p>
-        <p className="stop__text">{stop.description}</p>
+        <p className="stop__text">{withoutSourceTags(stop.description)}</p>
         {stop.myChange && <span className="stop__tag stop__personal">{copy.myChange}</span>}
+        {booking && !editing && <BookingTags summary={booking} />}
         <span className={`stop__tag${stop.source === 'voted' ? ' is-voted' : ''}`}>
           {stop.source === 'voted' ? (
             <>

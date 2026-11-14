@@ -612,3 +612,13 @@
   background: var(--color-surface-warning);
   font-size: var(--text-caption-size);
 }
+
+.itinerary__orphans {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-warning);
+  color: var(--color-text-warning);
+}

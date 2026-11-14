@@ -120,3 +120,21 @@
   width: 14px;
   height: 14px;
 }
+
+/* The booking bar stays at the bottom of the screen while the page scrolls. */
+.place__bar {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  padding: var(--space-md) var(--space-xl);
+  border-top: var(--border-width-default) solid var(--color-divider);
+  background: var(--color-surface-default);
+}
+
+.place__bar-booked {
+  color: var(--color-text-secondary);
+  font-size: var(--text-body-size);
+  line-height: var(--text-body-leading);
+  font-weight: var(--weight-semibold);
+  text-align: center;
+}
