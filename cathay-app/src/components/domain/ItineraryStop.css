@@ -197,7 +197,4 @@ a.stop:active,
   height: var(--space-lg);
 }
 
-.stop__tag.stop__personal {
-  color: var(--color-text-chip);
-  background: var(--color-surface-chip);
-}
+

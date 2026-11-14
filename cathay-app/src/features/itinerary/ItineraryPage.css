@@ -222,18 +222,6 @@
   background: var(--color-surface-default);
 }
 
-.itinerary__removed {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-sm);
-  padding: var(--space-sm) var(--space-md);
-  border-radius: var(--radius-control);
-  background: var(--color-surface-chip);
-  color: var(--color-text-chip);
-}
-
 .itinerary-edit,
 .itinerary-edit__select,
 .itinerary-edit__scopes {

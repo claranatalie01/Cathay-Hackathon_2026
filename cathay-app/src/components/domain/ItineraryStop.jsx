@@ -59,7 +59,6 @@ export default function ItineraryStop({ stop, to, editing = false, canUp = false
           {stop.durationLabel ?? minutesLabel(stop.minutes)} · {stop.costLabel}
         </p>
         <p className="stop__text">{withoutSourceTags(stop.description)}</p>
-        {stop.myChange && <span className="stop__tag stop__personal">{copy.myChange}</span>}
         {booking && !editing && <BookingTags summary={booking} />}
         <span className={`stop__tag${stop.source === 'voted' ? ' is-voted' : ''}`}>
           {stop.source === 'voted' ? (

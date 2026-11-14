@@ -75,8 +75,6 @@ function TripItinerary({ groupId }) {
   const view = params.get('view') === 'timeline' ? 'timeline' : 'list';
   const list = view === 'list';
   const ids = day.items.filter((item) => item.kind === 'place').map(({ id }) => id);
-  const removed = session?.scope === 'group' ? [] : (data.removedByDay[day.date] ?? [])
-    .filter((item) => !ids.includes(item.id));
   const patchParams = (key, value) => {
     const next = new URLSearchParams(params);
     if (value) next.set(key, value);
@@ -182,12 +180,6 @@ function TripItinerary({ groupId }) {
                   );
                 })}
               </ol>
-              {removed.map((item) => (
-                <div className="itinerary__removed" key={item.id}>
-                  <span>{copy.removedStop(item.name)} <strong>{copy.myChange}</strong></span>
-                  {editing && <Button size="sm" variant="secondary" disabled={busy} onClick={() => editStop('restore', item)}>{copy.restoreShared}</Button>}
-                </div>
-              ))}
               {orphans.length > 0 && (
                 <section className="itinerary__orphans" aria-labelledby="orphans-heading">
                   <p className="itinerary__maybe-name" id="orphans-heading">{COPY.stopBooking.orphanTitle}</p>

@@ -70,7 +70,6 @@ export default function PlaceDetailPage() {
       <img className="place__photo" src={stop.photo} alt={stop.alt} referrerPolicy="no-referrer" onError={fallbackTo(stop.category_key)} />
       <div className="place__head">
         <h2 className="place__name">{stop.name}</h2>
-        {stop.myChange && <p className="place__text">{copy.myChange}</p>}
         <p className="place__area">
           <img src="/assets/ui-pin-teal.svg" alt="" />
           {stop.area}
