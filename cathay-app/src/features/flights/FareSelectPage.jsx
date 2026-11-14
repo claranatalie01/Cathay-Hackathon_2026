@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { getFares, saveSelection } from '../../api';
+import { ApiError, getFares, saveSelection } from '../../api';
 import ComparisonTable from '../../components/domain/ComparisonTable';
 import FareCard from '../../components/domain/FareCard';
 import PageHeader from '../../components/layout/PageHeader';
@@ -69,8 +69,9 @@ export default function FareSelectPage() {
         toast(copy.pickedReturn);
         navigate(`/groups/${groupId}/invite`, { replace: true });
       }
-    } catch {
-      toast(copy.saveFailed);
+    } catch (failure) {
+      // Say the real reason when the app knows it (for example "You have already booked this trip.").
+      toast(failure instanceof ApiError && failure.code !== 'service_unavailable' ? failure.message : copy.saveFailed);
       setSaving(null);
     }
   };

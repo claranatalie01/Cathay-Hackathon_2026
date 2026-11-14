@@ -433,7 +433,10 @@ const flightRoutes = [
       },
       { onConflict: 'group_id,user_id,direction' },
     );
-    if (error) throw UNREACHABLE();
+    if (error) {
+      console.warn('Flight choice could not be saved:', error);
+      throw UNREACHABLE();
+    }
     return { status: 200, body: { ...(group.selections[userId] ?? {}), [direction]: chosen } };
   }],
 ];
