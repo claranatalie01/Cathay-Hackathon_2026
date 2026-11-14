@@ -1,6 +1,6 @@
 // Shared itinerary generation, reading and editing.
 import { notifyDataChanged } from './events';
-import { invalidateGet, request } from './http';
+import { clearPendingGets, invalidateGet, request } from './http';
 
 const enc = encodeURIComponent;
 
@@ -43,7 +43,7 @@ export function getStop(groupId, stopId) {
 // `booking` is { placeKey, stopName, date, startTime, reference, price } after the provider confirmed it.
 export async function saveBooking(groupId, booking) {
   const result = await request('POST', `/groups/${enc(groupId)}/itinerary/bookings`, booking);
-  invalidateGet(`/groups/${enc(groupId)}/itinerary`);
+  clearPendingGets(); // a background refresh already in flight would hand back the page from before the booking
   notifyDataChanged();
   return result;
 }

@@ -56,7 +56,6 @@ function TripItinerary({ groupId }) {
     <Screen>
       <StatusBar />
       <PageHeader title={data?.group.name ?? 'Itinerary'} onBack={() => navigate(`/groups/${groupId}/preferences/saved`)} />
-      {status === 'success' && <CalendarExport key={groupId} itinerary={data} />}
       {body}
       <BottomNav variant="groups" />
       {sheet}
@@ -136,6 +135,7 @@ function TripItinerary({ groupId }) {
             { id: 'timeline', label: COPY.board.timeline, icon: '/assets/ui-timeline.svg', iconSelected: '/assets/ui-timeline-light.svg' },
           ]}
         />
+        <CalendarExport key={groupId} itinerary={data} />
         <Tabs
           label="Days"
           value={String(dayIndex)}

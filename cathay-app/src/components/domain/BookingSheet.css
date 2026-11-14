@@ -22,7 +22,7 @@
   line-height: var(--text-body-leading);
 }
 
-.booking-sheet__demo {
+.booking-sheet__provider {
   font-size: var(--text-caption-size);
   line-height: var(--text-caption-leading);
   text-align: center;

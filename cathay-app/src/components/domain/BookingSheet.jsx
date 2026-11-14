@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { saveBooking } from '../../api';
-import { confirmBooking, checkAvailability, DEMO_LABEL, holdBooking, PROVIDER_LABEL } from '../../api/providers/expedia';
+import { confirmBooking, checkAvailability, holdBooking, PROVIDER_LABEL } from '../../api/providers/expedia';
 import { longDate, placeKeyOf, startOf } from '../../algorithms/bookings';
 import { COPY } from '../../data/copy';
 import Button from '../ui/Button';
@@ -16,13 +16,19 @@ export default function BookingSheet({ open, onClose, groupId, stop, date, userI
   const [result, setResult] = useState(null);
   const [attempt, setAttempt] = useState(0);
   const running = useRef(false);
+  // The page refreshes its data in the background, which hands this sheet a new `stop` object for the
+  // same stop. Only a different stop, date or price may restart the check; a refresh must not.
+  const stopRef = useRef(stop);
+  stopRef.current = stop;
+  const stopKey = `${placeKeyOf(stop)}|${date}|${startOf(stop)}`;
+  const cost = Number(stop.cost) || 0;
 
   useEffect(() => {
     if (!open) return undefined;
     let active = true;
     setPhase('checking');
     setResult(null);
-    checkAvailability(stop, date).then(
+    checkAvailability(stopRef.current, date).then(
       (found) => {
         if (!active) return;
         setOffer(found);
@@ -33,14 +39,13 @@ export default function BookingSheet({ open, onClose, groupId, stop, date, userI
     return () => {
       active = false;
     };
-  }, [open, stop, date, attempt]);
+  }, [open, stopKey, cost, date, attempt]);
 
   async function confirm() {
     if (running.current) return; // a double tap must not book twice
     running.current = true;
     setPhase('working');
     try {
-      const stopKey = `${placeKeyOf(stop)}|${date}|${startOf(stop)}`;
       const hold = await holdBooking({ stopKey, userId, price: offer.pricePerPerson });
       const confirmed = await confirmBooking(hold);
       await saveBooking(groupId, {
@@ -72,7 +77,7 @@ export default function BookingSheet({ open, onClose, groupId, stop, date, userI
             <p className="booking-sheet__note">{offer.cancellation}</p>
             <Button size="lg" data-autofocus disabled={busy} onClick={confirm}>{busy ? copy.working : copy.confirm(price)}</Button>
             <Button size="lg" variant="secondary" disabled={busy} onClick={onClose}>{copy.cancel}</Button>
-            <p className="booking-sheet__note booking-sheet__demo">{PROVIDER_LABEL}. {DEMO_LABEL}.</p>
+            <p className="booking-sheet__note booking-sheet__provider">{PROVIDER_LABEL}</p>
           </>
         )}
         {phase === 'done' && (

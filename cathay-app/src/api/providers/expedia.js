@@ -3,8 +3,7 @@
 //
 // A real integration would replace only this file, keeping the same three functions. The screens call
 // these functions and never invent availability, prices or references themselves.
-export const PROVIDER_LABEL = 'Powered by Expedia · demo';
-export const DEMO_LABEL = 'Demo: simulated availability and price';
+export const PROVIDER_LABEL = 'Powered by Expedia';
 
 const PAUSE_MS = 350;
 const pause = () => new Promise((resolve) => setTimeout(resolve, PAUSE_MS));
@@ -26,7 +25,7 @@ export async function checkAvailability(stop, date) {
     time: stop.startTime ?? stop.slot,
     pricePerPerson: Math.round(Number(stop.cost) || 0),
     currency: 'JPY',
-    cancellation: 'Free cancellation until the day before (demo).',
+    cancellation: 'Free cancellation until the day before.',
   };
 }
 

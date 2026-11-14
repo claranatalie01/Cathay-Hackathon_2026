@@ -478,10 +478,19 @@ async function tripContext(params, want = {}) {
     try {
       bookingRows = await rows(supabase.from('itinerary_bookings')
         .select('stop_key, user_id, place_key, stop_name, slot_date, start_time, booked_at').eq('group_id', id));
-      const mine = new Map((await call(supabase, 'get_my_bookings', { target_group: id })).map((row) => [row.stop_key, row]));
+      // The caller's own reference and price come from a second function. If that one is missing, keep
+      // the rows so everyone still sees who has booked.
+      let own = [];
+      try {
+        own = await call(supabase, 'get_my_bookings', { target_group: id });
+      } catch (failure) {
+        console.warn('get_my_bookings is missing. Run supabase/migrations/20261114030000_itinerary_bookings.sql again.', failure);
+      }
+      const mine = new Map(own.map((row) => [row.stop_key, row]));
       bookingRows = bookingRows.map((row) => (row.user_id === userId && mine.has(row.stop_key)
         ? { ...row, reference: mine.get(row.stop_key).reference, price_jpy: mine.get(row.stop_key).price_jpy } : row));
-    } catch {
+    } catch (failure) {
+      console.warn('Bookings could not be read. Has the itinerary_bookings migration been run?', failure);
       bookingRows = [];
     }
   }

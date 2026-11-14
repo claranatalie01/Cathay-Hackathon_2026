@@ -435,10 +435,19 @@ Found from a real itinerary screenshot (2-member group, Day 2):
 ## Update, 14 November 2026 (per-person itinerary booking, simulated)
 
 - **Each traveller books and pays for themselves**, so nobody fronts the group's money. Itinerary cards show the viewer's status (Not booked / Booked / No booking needed) and, on bookable stops, "1 of 2 booked". The stop detail lists who has booked, has a bottom bar "Book for me · ¥price", and opens one bottom sheet ("Confirm and pay") that turns into the confirmation in place. No card fields, nothing typed.
-- **Everything provider-side is simulated** in `src/api/providers/expedia.js` (checkAvailability, holdBooking, confirmBooking), labelled "Powered by Expedia · demo". Cathay's access to Expedia is not verified. A real integration would replace only that file.
+- **Everything provider-side is simulated** in `src/api/providers/expedia.js` (checkAvailability, holdBooking, confirmBooking), labelled "Powered by Expedia" (the on-screen demo wording was removed at the owner's request). Cathay's access to Expedia is not verified. A real integration would replace only that file.
 - **Rules in `src/algorithms/bookings.js`** (tests in `bookings.test.js`): bookable = not a meal, not free time, not food or shopping, and a cost above 0. A booking is keyed by place + date + start time, so a moved stop shows "Time changed, check your booking" and a removed stop appears under "No longer in the plan"; rows are never rewritten.
 - **Database: migration `20261114030000_itinerary_bookings.sql` (run it on Supabase yourself).** Table `itinerary_bookings`, writes only through `save_booking` (caller taken from the session, repeat call returns the same booking), members can read who booked but not anyone's reference or price (column grants); `get_my_bookings` returns the caller's own. Tested on a scratch local Postgres: own-row writes only, outsiders refused, bad input refused, no direct insert/update/delete. Until the migration is run the itinerary still opens, without booking marks, and booking shows "We could not complete the booking".
 - Other members' bookings appear within about 15 seconds (quiet refresh), not instantly.
 - Fixed on the same screens: the detail tile now shows the scheduled part of the day (was the place's "best time", which disagreed with the header); `[S903]`-style source tags are hidden in visible text.
 - **Not done:** the Mori Art Museum photo (needs a verified image source), the "Lunch: Tea" title (it is the model's own wording), seeing the screens in a browser (sign-in needed).
 - Tests: 66 JavaScript (`npm test`), `check:tokens` and `build` pass.
+
+### Update, 14 November 2026 (booking polish)
+
+- [x] Confirm and pay no longer restarts: the booking sheet ignored nothing when the page refreshed its data, so each refresh sent it back to the review step. It now restarts only for a different stop, date or price, and stays open on "Booked for you".
+- [x] Stop page footer holds "Back to itinerary" and "Book for me" side by side (or "View details" once booked).
+- [x] "Add to Google Calendar" sits below the List / Timeline switch.
+- [x] Demo wording removed from the booking sheet; it reads "Powered by Expedia".
+- [x] Sheets stay inside the 440 px phone frame on wide windows.
+- [ ] Not seen in a browser by Claude (sign-in needed).

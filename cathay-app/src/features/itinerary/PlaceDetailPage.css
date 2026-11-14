@@ -131,6 +131,29 @@
   background: var(--color-surface-default);
 }
 
+.place__bar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.place__bar-actions {
+  display: flex;
+  gap: var(--space-md);
+}
+
+.place__bar-actions > * {
+  /* A link and a button sit differently by default; centring both ways makes the two labels line up. */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1 1 0;
+  min-width: 0;
+  padding-inline: var(--space-sm);
+  font-size: var(--text-body-size);
+  line-height: var(--text-body-leading);
+}
+
 .place__bar-booked {
   color: var(--color-text-secondary);
   font-size: var(--text-body-size);

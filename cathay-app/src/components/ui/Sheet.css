@@ -4,6 +4,11 @@
   position: fixed;
 }
 
+/* `.screen > *` sets every child to full width; a fixed sheet would then span the whole window. */
+.screen > .sheet {
+  width: min(100%, var(--screen-width));
+}
+
 .scrim {
   top: 0;
   left: 0;

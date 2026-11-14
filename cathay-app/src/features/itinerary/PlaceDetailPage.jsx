@@ -143,22 +143,18 @@ export default function PlaceDetailPage() {
           )}
         </section>
       )}
-      <Button size="lg" variant="secondary" to={back}>
-        {copy.backToItinerary}
-      </Button>
     </main>
-    {summary.bookable && (
-      <div className="place__bar">
-        {summary.status === 'booked' ? (
-          <>
-            <p className="place__bar-booked">{book.bookedBar(summary.reference)}</p>
-            <Button size="lg" variant="secondary" onClick={() => setDetailsOpen(true)}>{book.viewDetails}</Button>
-          </>
+    <div className="place__bar">
+      {summary.bookable && summary.status === 'booked' && <p className="place__bar-booked">{book.bookedBar(summary.reference)}</p>}
+      <div className="place__bar-actions">
+        <Button size="lg" variant="secondary" to={back}>{copy.backToItinerary}</Button>
+        {summary.bookable && (summary.status === 'booked' ? (
+          <Button size="lg" onClick={() => setDetailsOpen(true)}>{book.viewDetails}</Button>
         ) : (
           <Button size="lg" onClick={() => setSheetOpen(true)}>{book.bookForMe(Math.round(stop.cost))}</Button>
-        )}
+        ))}
       </div>
-    )}
+    </div>
     {summary.status === 'booked' && (
       <Sheet open={detailsOpen} onClose={() => setDetailsOpen(false)} title={book.detailsTitle} titleId="booking-details-title">
         <p className="place__name">{stop.name}</p>
@@ -167,7 +163,7 @@ export default function PlaceDetailPage() {
         <Button size="lg" data-autofocus variant="secondary" onClick={() => setDetailsOpen(false)}>{book.cancel}</Button>
       </Sheet>
     )}
-    {summary.bookable && summary.status !== 'booked' && (
+    {summary.bookable && (sheetOpen || summary.status !== 'booked') && (
       <BookingSheet
         open={sheetOpen}
         onClose={closeSheet}
